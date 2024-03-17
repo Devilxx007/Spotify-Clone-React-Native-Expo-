@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Animated, TextInput, TouchableOpacity, Pressable } from 'react-native'
+import { View, Text, ScrollView, Animated, TextInput, TouchableOpacity, Pressable, FlatList,Image } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
@@ -50,6 +50,7 @@ const LikedScreen = () => {
     useEffect(()=>{
         getSavedTracks()
     },[])
+
     return (
       <Animated.View
         style={{
@@ -103,15 +104,34 @@ const LikedScreen = () => {
     setHeaderHeight(newHeaderHeight);
   };
 
+  const renderitem = ({ item }:any)=>{
+    return (
+      <Pressable className = " flex flex-row items-center p-3 m-2">
+        <Image className=" mr-2" source={{uri:item?.track?.album?.images[0]?.url}} height={50} width={50}/>
+      <View className =" flex-1">
+        <Text numberOfLines={1} className=" text-[15px] text-white font-semibold">{item?.track?.name}</Text>
+        <Text className= " text-[#989898] text-[12px]">{item?.track?.artists[0]?.name}</Text>
+      </View>
+      <View className =" flex flex-row items-center gap-2 mx-2">
+        <TouchableOpacity>
+        <Entypo name="heart" size={24} color="#1DB954" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+        <Entypo name="dots-three-horizontal" size={24} color="#C0C0C0" />
+        </TouchableOpacity>
+      </View>
+      </Pressable>
+    )
+  }
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }} className = " bg-[#040306]">
     <DynamicHeader value={scrollOffsetY} />
         <ScrollView
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
         >
-
+        <FlatList data={savedTracks} renderItem={renderitem} showsHorizontalScrollIndicator={false}/>
         </ScrollView>
       
     </View>

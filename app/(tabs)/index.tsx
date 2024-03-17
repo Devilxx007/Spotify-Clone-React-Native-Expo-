@@ -97,7 +97,7 @@ const MainScreen = () => {
   const message = greetingMessage();
   const router = useRouter();
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }:any) => {
     return (
       <Pressable className = " flex-1 flex-row items-center justify-between mx-3 my-2 bg-[#282828]">
         <Image source={{uri:item?.track?.album?.images[0]?.url}} style={{height:55,width:55}} className =""/>
