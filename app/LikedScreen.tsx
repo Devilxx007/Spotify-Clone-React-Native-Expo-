@@ -102,10 +102,10 @@ const LikedScreen = () => {
               </Text>
             </View>
             <View className=" flex flex-row items-center">
-              <TouchableOpacity className="  rounded-full bg-green-600 ml-2">
+              <TouchableOpacity className="  rounded-full bg-green-500 ml-2 px-2 py-2">
                 <Feather name="arrow-down" size={25} color="white" />
               </TouchableOpacity>
-              <TouchableOpacity className="  rounded-full bg-green-600 ml-[80%]" onPress={play}>
+              <TouchableOpacity className="  rounded-full bg-green-500 ml-[78%] px-1 py-1 relative right-3 top-5" onPress={play}>
                 <Entypo name="controller-play" size={40} color="white" />
               </TouchableOpacity>
             </View>
@@ -123,6 +123,9 @@ const LikedScreen = () => {
             <Text className=" mt-[10%] text-[20px] font-bold text-white ml-[10%]">
               Liked Songs
             </Text>
+            <TouchableOpacity className=" absolute top-[85%] left-[80%] px-1 py-1 rounded-full bg-green-500">
+            <Entypo name="controller-play" size={40} color="white" />
+            </TouchableOpacity>
           </View>
         )}
       </Animated.View>
