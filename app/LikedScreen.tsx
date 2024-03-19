@@ -19,6 +19,7 @@ import { Entypo } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { Player } from '@/context/PlayerContext'
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const LikedScreen = () => {
   const [savedTracks, setSavedTracks] = useState([])
@@ -29,14 +30,7 @@ const LikedScreen = () => {
   const [headerHeight, setHeaderHeight] = useState(HEADER_MAX)
 
   const {currentTrack,setCurrentTrack} = useContext(Player)
-  const DynamicHeader = ({ value }: any) => {
-    const animatedHeaderColor = value.interpolate({
-      inputRange: [0, scroll_distance],
-      outputRange: ['#614385', '#516395'],
-      extrapolate: 'clamp'
-    })
-
-    const router = useRouter()
+  const router = useRouter()
 
     const getSavedTracks = async () => {
       const accessToken = await AsyncStorage.getItem('token')
@@ -60,6 +54,12 @@ const LikedScreen = () => {
       getSavedTracks()
     }, [])
 
+  const DynamicHeader = ({ value }: any) => {
+    const animatedHeaderColor = value.interpolate({
+      inputRange: [0, scroll_distance],
+      outputRange: ['#614385', '#516395'],
+      extrapolate: 'clamp'
+    })
     return (
       <Animated.View
         style={{
@@ -140,22 +140,22 @@ const LikedScreen = () => {
     return (
       <Pressable
         className=" flex flex-row items-center p-3 m-2"
-        onPress={() => playTrack(index)}
+        onPress={() => play()}
       >
         <Image
-          className=" mr-2"
+          className=" mr-2 rounded-md"
           source={{ uri: item?.track?.album?.images[0]?.url }}
-          height={50}
-          width={50}
+          height={55}
+          width={55}
         />
         <View className=" flex-1">
           <Text
             numberOfLines={1}
-            className=" text-[15px] text-white font-semibold"
+            className=" text-[18px] text-white font-semibold"
           >
             {item?.track?.name}
           </Text>
-          <Text className=" text-[#989898] text-[12px]">
+          <Text className=" text-[#989898] text-[15px]">
             {item?.track?.artists[0]?.name}
           </Text>
         </View>
@@ -200,8 +200,22 @@ const LikedScreen = () => {
       </View>
       {
         currentTrack && (
-          <Pressable className="">
-            <Text className=" text-green text-[20px]">{currentTrack?.track?.name}</Text>
+          <Pressable onPress={()=>{router.push("/(modals)/modal")}} className=" bg-[#50C878] w-[90%] absolute bottom-3 left-5 right-5 rounded-md px-2 py-1 h-[50px]">
+            <View className = " flex flex-row items-center">
+              <Image source={{uri: currentTrack?.track?.album?.images[0]?.url}} height={40} width={40} className=" rounded-md"/>
+              <View className = " flex-1 ml-2">
+              <Text numberOfLines={1} className= " text-[18px] font-bold text-white">
+                {currentTrack?.track?.name}
+              </Text>
+              <Text numberOfLines={1} className=" text-[15px] font-medium text-white">
+                {currentTrack?.track?.artists[0]?.name}
+              </Text>
+              </View>
+              <View className= " flex flex-row gap-5">
+              <MaterialCommunityIcons name="monitor-speaker" size={30} color="white" />
+              <Entypo name="controller-play" size={30} color="white" />
+              </View>
+            </View>
           </Pressable>
         )
       }

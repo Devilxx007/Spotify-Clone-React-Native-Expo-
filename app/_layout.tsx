@@ -15,6 +15,11 @@ const RootLayout = () => {
       <Stack.Screen name='LikedScreen' options={{
         headerShown:false
       }}/>
+      <Stack.Screen name='(modals)/modal'options={{
+        headerShown:false,
+        presentation:"fullScreenModal",
+        animation:"fade_from_bottom",
+      }}/>
     </Stack>
     </PlayerContext>
   )
