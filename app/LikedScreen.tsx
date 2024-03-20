@@ -19,7 +19,8 @@ import { Entypo } from '@expo/vector-icons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { Player } from '@/context/PlayerContext'
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { Audio } from 'expo-av'
 
 const LikedScreen = () => {
   const [savedTracks, setSavedTracks] = useState([])
@@ -27,32 +28,36 @@ const LikedScreen = () => {
   const HEADER_MAX = 230
   const HEADER_MIN = 80
   const scroll_distance = HEADER_MAX - HEADER_MIN
+  const [currentSound,setCurrentSound] = useState(null);
+  const [progress,setprogress] = useState(null)
+  const [currentTime,setCurrentTime] = useState(0)
+  const [totalDuration,setTotalDuration] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(HEADER_MAX)
 
-  const {currentTrack,setCurrentTrack} = useContext(Player)
+  const { currentTrack, setCurrentTrack } = useContext(Player)
   const router = useRouter()
 
-    const getSavedTracks = async () => {
-      const accessToken = await AsyncStorage.getItem('token')
-      try {
-        const response = await axios({
-          method: 'GET',
-          url: 'https://api.spotify.com/v1/me/tracks?offset=0&limit=50',
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          },
-          params: {
-            limit: 50
-          }
-        })
-        setSavedTracks(response.data.items)
-      } catch (error) {
-        console.error('Error fetching tracks', error)
-      }
+  const getSavedTracks = async () => {
+    const accessToken = await AsyncStorage.getItem('token')
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: 'https://api.spotify.com/v1/me/tracks?offset=0&limit=50',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        },
+        params: {
+          limit: 50
+        }
+      })
+      setSavedTracks(response.data.items)
+    } catch (error) {
+      console.error('Error fetching tracks', error)
     }
-    useEffect(() => {
-      getSavedTracks()
-    }, [])
+  }
+  useEffect(() => {
+    getSavedTracks()
+  }, [])
 
   const DynamicHeader = ({ value }: any) => {
     const animatedHeaderColor = value.interpolate({
@@ -105,7 +110,10 @@ const LikedScreen = () => {
               <TouchableOpacity className="  rounded-full bg-green-500 ml-2 px-2 py-2">
                 <Feather name="arrow-down" size={25} color="white" />
               </TouchableOpacity>
-              <TouchableOpacity className="  rounded-full bg-green-500 ml-[78%] px-1 py-1 relative right-3 top-5" onPress={play}>
+              <TouchableOpacity
+                className="  rounded-full bg-green-500 ml-[78%] px-1 py-1 relative right-3 top-5"
+                onPress={play}
+              >
                 <Entypo name="controller-play" size={40} color="white" />
               </TouchableOpacity>
             </View>
@@ -124,7 +132,7 @@ const LikedScreen = () => {
               Liked Songs
             </Text>
             <TouchableOpacity className=" absolute top-[85%] left-[80%] px-1 py-1 rounded-full bg-green-500">
-            <Entypo name="controller-play" size={40} color="white" />
+              <Entypo name="controller-play" size={40} color="white" />
             </TouchableOpacity>
           </View>
         )}
@@ -138,7 +146,6 @@ const LikedScreen = () => {
     setHeaderHeight(newHeaderHeight)
   }
 
-  
   const renderitem = ({ item, index }: any) => {
     return (
       <Pressable
@@ -174,17 +181,51 @@ const LikedScreen = () => {
     )
   }
 
-  const play = async ()=>{
-    if(savedTracks.length > 0){
-      console.log("Button cliked")
-      setCurrentTrack(savedTracks[0]);
+  const play = async () => {
+    if (savedTracks.length > 0) {
+      console.log('Button cliked')
+      setCurrentTrack(savedTracks[0])
     }
-    await PlayTrack();
+    console.log("Current track",currentTrack)
+    await PlayTrack()
   }
 
-  const PlayTrack =async ()=>{
-    console.log("inside PlayTrack");
+  const PlayTrack = async () => {
+    const previewUrl = currentTrack?.track?.preview_url
+    try {
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: false
+      })
+      const { sound, status } = await Audio.Sound.createAsync(
+        {
+          uri: previewUrl
+        },
+        {
+          shouldPlay: true,
+          isLooping: false
+        },
+        onPlaybackStatusUpdate
+        
+      )
+      onPlaybackStatusUpdate(status)
+      setCurrentSound(sound);
+      await sound.playAsync();
+    } catch (error) {
+      console.log('Error', error)
+    }
   }
+  const onPlaybackStatusUpdate = async(status)=>{
+    if(status.isLoaded && status.isPlaying){
+      const progress = status?.positionMillis / status?.durationMillis;
+      console.log("The progress",progress)
+      setprogress(progress);
+      setCurrentTime(progress?.positionMillis)
+      setTotalDuration(progress?.durationMillis)
+    }
+  }
+
   return (
     <>
       <View style={{ flex: 1 }} className=" bg-[#040306]">
@@ -201,27 +242,45 @@ const LikedScreen = () => {
           />
         </ScrollView>
       </View>
-      {
-        currentTrack && (
-          <Pressable onPress={()=>{router.push("/(modals)/modal")}} className=" bg-[#50C878] w-[90%] absolute bottom-3 left-5 right-5 rounded-md px-2 py-1 h-[50px]">
-            <View className = " flex flex-row items-center">
-              <Image source={{uri: currentTrack?.track?.album?.images[0]?.url}} height={40} width={40} className=" rounded-md"/>
-              <View className = " flex-1 ml-2">
-              <Text numberOfLines={1} className= " text-[18px] font-bold text-white">
+      {currentTrack && (
+        <Pressable
+          onPress={() => {
+            router.push('/(modals)/modal')
+          }}
+          className=" bg-[#50C878] w-[90%] absolute bottom-3 left-5 right-5 rounded-md px-2 py-1 h-[50px]"
+        >
+          <View className=" flex flex-row items-center">
+            <Image
+              source={{ uri: currentTrack?.track?.album?.images[0]?.url }}
+              height={40}
+              width={40}
+              className=" rounded-md"
+            />
+            <View className=" flex-1 ml-2">
+              <Text
+                numberOfLines={1}
+                className=" text-[18px] font-bold text-white"
+              >
                 {currentTrack?.track?.name}
               </Text>
-              <Text numberOfLines={1} className=" text-[15px] font-medium text-white">
+              <Text
+                numberOfLines={1}
+                className=" text-[15px] font-medium text-white"
+              >
                 {currentTrack?.track?.artists[0]?.name}
               </Text>
-              </View>
-              <View className= " flex flex-row gap-5">
-              <MaterialCommunityIcons name="monitor-speaker" size={30} color="white" />
-              <Entypo name="controller-play" size={30} color="white" />
-              </View>
             </View>
-          </Pressable>
-        )
-      }
+            <View className=" flex flex-row gap-5">
+              <MaterialCommunityIcons
+                name="monitor-speaker"
+                size={30}
+                color="white"
+              />
+              <Entypo name="controller-play" size={30} color="white" />
+            </View>
+          </View>
+        </Pressable>
+      )}
     </>
   )
 }

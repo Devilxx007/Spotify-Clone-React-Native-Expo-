@@ -39,7 +39,13 @@ const modal = () => {
         </Pressable>
         </View>
         <View>
-          <Text>Progess Bar</Text>
+          <View>
+            
+          </View>
+
+          <View>
+            
+          </View>
         </View>
         <View className=" flex flex-row justify-around items-center mt-4">
           <Pressable>
