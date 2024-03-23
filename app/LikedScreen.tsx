@@ -10,7 +10,6 @@ import {
   Image
 } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { Octicons } from '@expo/vector-icons'
@@ -28,13 +27,17 @@ const LikedScreen = () => {
   const HEADER_MAX = 230
   const HEADER_MIN = 80
   const scroll_distance = HEADER_MAX - HEADER_MIN
-  const [currentSound,setCurrentSound] = useState(null);
-  const [progress,setprogress] = useState(null)
-  const [currentTime,setCurrentTime] = useState(0)
-  const [totalDuration,setTotalDuration] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(HEADER_MAX)
-
-  const { currentTrack, setCurrentTrack } = useContext(Player)
+  const { currentTrack,
+    setCurrentTrack,
+    progress,
+    setprogress,
+    currentTime,
+    setCurrentTime,
+    totalDuration,
+    setTotalDuration,
+    currentSound,
+    setCurrentSound } = useContext(Player)
   const router = useRouter()
 
   const getSavedTracks = async () => {
@@ -219,7 +222,6 @@ const LikedScreen = () => {
   const onPlaybackStatusUpdate = async(status)=>{
     if(status.isLoaded && status.isPlaying){
       const progress = status?.positionMillis / status?.durationMillis;
-      console.log("The progress",progress)
       setprogress(progress);
       setCurrentTime(progress?.positionMillis)
       setTotalDuration(progress?.durationMillis)
